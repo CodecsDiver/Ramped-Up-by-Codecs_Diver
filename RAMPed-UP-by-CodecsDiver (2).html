@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAMP{ed}="Up"; by CodecsDiver</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-floor: #090a10;
+    --bg: rgba(20, 20, 28, 0.06);
+    --panel: rgba(255,255,255,0.04);
+    --panel-border: rgba(255,255,255,0.09);
+    --text: #e8e9f0;
+    --text-header: #ffffff;
+    --muted: #8b8fa3;
+    --accent: #8b7fd4;
+    --glow: rgba(139,127,212,0.12);
+    --shadow: rgba(0,0,0,0.55);
+    --radius: 16px;
+
+    --input-bg: #13141b;
+    --input-border: rgba(255,255,255,0.12);
+    --input-focus: rgba(139,127,212,0.35);
+
+    --switch-track: rgba(255,255,255,0.10);
+    --switch-border: rgba(255,255,255,0.20);
+    --switch-knob: #ffffff;
+
+    --pill-pass-bg: rgba(52,199,89,0.15);
+    --pill-pass-text: #5cdb8b;
+    --pill-aa-bg: rgba(255,204,0,0.15);
+    --pill-aa-text: #f2d66e;
+    --pill-fail-bg: rgba(120,120,135,0.18);
+    --pill-fail-text: #8d8da0;
+    --pill-fail-border: rgba(120,120,135,0.30);
+
+    --code-bg: rgba(0,0,0,0.45);
+    --code-text: #c7cbe6;
+
+    --swatch-border: rgba(255,255,255,0.10);
+  }
+
+  body.light {
+    --bg-floor: #eef0f5;
+    --bg: rgba(255,255,255,0.10);
+    --panel: rgba(255,255,255,0.72);
+    --panel-border: rgba(0,0,0,0.06);
+    --text: #1a1b26;
+    --text-header: #0d0e15;
+    --muted: #4e5068;
+    --accent: #5c4db0;
+    --glow: rgba(92,77,176,0.10);
+    --shadow: rgba(0,0,0,0.08);
+
+    --input-bg: #ffffff;
+    --input-border: rgba(0,0,0,0.12);
+    --input-focus: rgba(92,77,176,0.30);
+
+    --switch-track: rgba(0,0,0,0.08);
+    --switch-border: rgba(0,0,0,0.18);
+    --switch-knob: #1a1b26;
+
+    --pill-pass-bg: rgba(48,179,81,0.12);
+    --pill-pass-text: #276e4b;
+    --pill-aa-bg: rgba(230,184,0,0.12);
+    --pill-aa-text: #705a00;
+    --pill-fail-bg: rgba(80,80,90,0.10);
+    --pill-fail-text: #5e6075;
+    --pill-fail-border: rgba(80,80,90,0.18);
+
+    --code-bg: rgba(0,0,0,0.04);
+    --code-text: #2a2c3a;
+
+    --swatch-border: rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg-floor);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    transition: background 0.5s ease, color 0.4s ease;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Glass background layer: near-transparent, blurred, sits between the floor
+     tone and the blobs so gaps between panels read as frosted glass rather
+     than flat paint. */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: var(--bg);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    pointer-events: none;
+    transition: background 0.5s ease;
+  }
+
+  .blobs {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .blob {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+    filter: blur(110px); opacity: 0.6;
+    animation: drift 18s ease-in-out infinite alternate;
+    transition: background 0.6s ease;
+  }
+  .blob:nth-child(1) { width: 520px; height: 520px; top: -140px; left: -80px; }
+  .blob:nth-child(2) { width: 640px; height: 640px; bottom: -200px; right: -160px; animation-delay: -6s; animation-duration: 22s; }
+  .blob:nth-child(3) { width: 380px; height: 380px; top: 40%; left: 55%; animation-delay: -12s; animation-duration: 16s; opacity: 0.35; }
+  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(40px,60px); } }
+
+  main {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 1040px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+
+  header { text-align: center; margin-bottom: 4px; }
+  h1 {
+    font-size: 2.4rem; font-weight: 300; letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fff 30%, #a5b4ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    transition: background 0.35s ease;
+  }
+  body.light h1 {
+    background: linear-gradient(135deg, #2a2650 30%, #6a5dd0 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; margin-top: 6px; transition: color 0.35s ease; font-weight: 400;}
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 24px 70px var(--shadow);
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+  }
+
+  .label-tag {
+    font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+    transition: color 0.35s ease;
+  }
+  .label-tag::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--panel-border), transparent);
+  }
+  .label-tag.has-toggle { justify-content: space-between; gap: 16px; }
+  .label-tag.has-toggle::after { display: none; }
+
+  /* Controls */
+  .controls { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; }
+  .control-group { display: flex; flex-direction: column; gap: 6px; min-width: 80px; flex: 1 1 auto;}
+ .control-group.no-grow { flex: 0 0 auto; }
+  .control-group label {
+    font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+    transition: color 0.35s ease; display: flex; justify-content: space-between;
+  }
+  .control-group label .val { font-family: 'JetBrains Mono', monospace; font-weight: 400; opacity: 0.8;}
+  select, input[type="number"], input[type="text"] {
+    background: var(--input-bg); color: var(--text); border: 1px solid var(--input-border);
+    border-radius: 10px; padding: 8px 10px; font-size: 0.82rem; font-family: inherit;
+    outline: none; transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.35s ease, color 0.35s ease;
+    width: 100%;
+  }
+  select option { background: var(--input-bg); color: var(--text); }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; cursor: pointer;
+  }
+  select:hover, input[type="text"]:hover, input[type="number"]:hover { border-color: rgba(139,127,212,0.55); }
+  select:focus, input[type="text"]:focus, input[type="number"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--input-focus); }
+  input[type="number"] { width: 64px; }
+
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 4px; background: var(--input-border); border-radius: 2px; outline: none; margin: 10px 0 6px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer;
+    box-shadow: 0 0 0 4px var(--input-focus); transition: transform 0.15s ease;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none;
+    box-shadow: 0 0 0 4px var(--input-focus);
+  }
+
+  .picker-wrap {
+    position: relative; width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .picker-glow {
+    position: absolute; inset: -6px; border-radius: 50%;
+    background: var(--glow); filter: blur(14px); opacity: 0.9; transition: background 0.6s ease;
+  }
+  input[type="color"] {
+    appearance: none; width: 52px; height: 52px; border: none; border-radius: 50%; background: none; padding: 0; cursor: pointer; position: relative; z-index: 1;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.22); border-radius: 50%; box-shadow: inset 0 2px 12px rgba(0,0,0,0.45); }
+  body.light input[type="color"]::-webkit-color-swatch { border-color: rgba(0,0,0,0.18); box-shadow: inset 0 2px 12px rgba(0,0,0,0.18); }
+
+  .oklch-readout {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text);
+    background: transparent; padding: 0; border: none; letter-spacing: 0.02em; font-weight: 500;
+  }
+
+  button, .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: inherit; font-size: 0.78rem; font-weight: 500;
+    background: rgba(128,128,128,0.08); color: var(--text); border: 1px solid var(--panel-border);
+    border-radius: 10px; padding: 9px 16px; cursor: pointer; transition: all 0.2s ease;
+    text-decoration: none; white-space: nowrap;
+  }
+  button:hover, .btn:hover { background: rgba(128,128,128,0.14); border-color: rgba(139,127,212,0.45); transform: translateY(-1px); }
+  button:active, .btn:active { transform: translateY(0); }
+  button.primary, .btn.primary {
+    background: linear-gradient(135deg, #5c4db0, #7a6cc0); color: #fff; border: none;
+    box-shadow: 0 4px 22px rgba(92,77,176,0.30);
+  }
+  button.primary:hover, .btn.primary:hover { box-shadow: 0 8px 28px rgba(92,77,176,0.40); }
+
+  /* Toggle Switch */
+  .switch {
+    position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--switch-track); border-radius: 34px; border: 1px solid var(--switch-border);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .slider::before {
+    position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px;
+    background: var(--switch-knob); border-radius: 50%; transition: transform 0.3s, background 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  }
+  input:checked + .slider { background: var(--accent); border-color: transparent; }
+  input:checked + .slider::before { transform: translateX(18px); }
+
+  /* Hero */
+  .hero-grid { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+  .hero-primary { display: flex; align-items: center; gap: 18px; }
+  .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Swatches */
+  .swatch-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 14px;
+  }
+  .swatch-card { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+
+  .swatch-color {
+    width: 100%; aspect-ratio: 1 / 0.85; border-radius: 12px; position: relative; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.22); cursor: pointer;
+    box-shadow:
+      0 10px 24px -6px rgba(0,0,0,0.5),
+      0 2px 5px rgba(0,0,0,0.3),
+      inset 0 1px 1px rgba(255,255,255,0.4),
+      inset 0 -8px 14px -6px rgba(0,0,0,0.35);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease, background-color 0.6s ease;
+  }
+  .swatch-color:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow:
+      0 22px 44px -8px rgba(0,0,0,0.55),
+      inset 0 1px 1px rgba(255,255,255,0.45),
+      inset 0 -8px 14px -6px rgba(0,0,0,0.35);
+    border-color: rgba(139,127,212,0.5);
+    z-index: 2;
+  }
+  .swatch-color::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.08) 32%, rgba(255,255,255,0) 55%);
+  }
+  .swatch-color::before {
+    content: ''; position: absolute; left: 8%; top: 8%; width: 32%; height: 18%;
+    background: rgba(255,255,255,0.55); border-radius: 50%; filter: blur(4px); pointer-events: none;
+  }
+  .swatch-idx {
+    position: absolute; top: 6px; left: 6px; font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.65);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4); pointer-events: none;
+  }
+  .lock-btn {
+    position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; border-radius: 6px;
+    background: rgba(0,0,0,0.50); border: 1px solid rgba(255,255,255,0.14); color: #fff;
+    font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+    transition: transform 0.15s ease, background 0.2s ease; z-index: 3;
+  }
+  .lock-btn:hover { transform: scale(1.12); background: rgba(0,0,0,0.85); }
+  .lock-btn.locked { background: #e5b545; color: #2a1f00; border-color: #e5b545; }
+
+  .swatch-hex {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted);
+    margin-top: 2px; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+  .swatch-hex:hover { color: var(--text); background: var(--input-bg); }
+
+  .contrast-row { display: flex; gap: 5px; margin-top: 2px; }
+  .pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 500;
+    padding: 3px 7px; border-radius: 6px; letter-spacing: 0.02em; cursor: default; border: 1px solid transparent;
+    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+  }
+  .pill-pass { background: var(--pill-pass-bg); color: var(--pill-pass-text); border-color: var(--pill-pass-border); }
+  .pill-aa   { background: var(--pill-aa-bg);   color: var(--pill-aa-text);   border-color: var(--pill-aa-border); }
+  .pill-fail { background: var(--pill-fail-bg); color: var(--pill-fail-text); border-color: var(--pill-fail-border); }
+
+  /* Tooltip */
+  .tip {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) scale(0.96);
+    background: rgba(10,11,18,0.95); color: #fff; border: 1px solid rgba(255,255,255,0.12);
+    padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+    pointer-events: none; opacity: 0; white-space: nowrap; z-index: 10;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .swatch-card:hover .tip { opacity: 1; transform: translateX(-50%) scale(1); }
+  body.light .tip { background: rgba(255,255,255,0.95); color: #1a1b26; border-color: rgba(0,0,0,0.08); }
+
+  /* Palette Generator results */
+  .palette-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .palette-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .palette-swatch {
+    display: flex; flex-direction: column; gap: 6px; align-items: center;
+    flex: 1 1 120px; max-width: 160px;
+  }
+  .palette-color {
+    width: 100%; aspect-ratio: 1; border-radius: 14px; border: 1px solid var(--swatch-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35); cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  }
+  .palette-color:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 20px 50px rgba(0,0,0,0.45); }
+  .palette-label { font-size: 0.7rem; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
+  .palette-hex { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); cursor: pointer; }
+  .palette-hex:hover { color: var(--text); }
+  .palette-hint { font-size: 0.72rem; color: var(--muted); margin-top: 14px; text-align: center; opacity: 0.8; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tab-btn {
+    background: rgba(128,128,128,0.06); border: 1px solid var(--panel-border);
+    border-radius: 999px; padding: 6px 16px; font-size: 0.7rem; letter-spacing: 0.04em; color: var(--muted);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(128,128,128,0.12); border-color: rgba(139,127,212,0.35); }
+  .tab-btn.active {
+    background: rgba(139,127,212,0.18); color: #e0dcff; border-color: rgba(139,127,212,0.45);
+    box-shadow: 0 0 24px rgba(139,127,212,0.18);
+  }
+  body.light .tab-btn.active { color: #3a2f7a; }
+
+  /* Developer Mode */
+  #exportPreview {
+    background: var(--code-bg); border: 1px solid var(--panel-border); border-radius: 12px;
+    padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; line-height: 1.65;
+    overflow-x: auto; margin: 0 0 12px; max-height: 320px; color: var(--code-text);
+    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+  }
+  .export-bottom { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  #copyStatus { font-size: 0.7rem; color: var(--muted); min-height: 1rem; transition: color 0.35s ease; }
+
+  .dev-content {
+    display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s ease, opacity 0.35s ease; opacity: 1;
+  }
+  .dev-content.collapsed { grid-template-rows: 0fr; opacity: 0; }
+  .dev-inner { overflow: hidden; min-height: 0; }
+
+  /* Syntax Tokens */
+  .token-sel { color: #ff7b72; transition: color 0.35s ease; }
+  .token-key { color: #79c0ff; transition: color 0.35s ease; }
+  .token-punct { color: #6e7681; transition: color 0.35s ease; }
+  .token-val { color: #a5d6ff; transition: color 0.35s ease; }
+  .token-str { color: #7ee787; transition: color 0.35s ease; }
+  body.light .token-sel { color: #d73a49; }
+  body.light .token-key { color: #005cc5; }
+  body.light .token-punct { color: #6a737d; }
+  body.light .token-val { color: #032f62; }
+  body.light .token-str { color: #22863a; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(20,22,35,0.95); color: #fff; padding: 10px 20px; border-radius: 999px;
+    font-size: 0.82rem; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    pointer-events: none; opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; z-index: 100;
+    backdrop-filter: blur(10px); font-weight: 500;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  body.light #toast { background: rgba(255,255,255,0.95); color: #1a1b26; border-color: rgba(0,0,0,0.08); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  @media (max-width: 720px) {
+    .controls { flex-direction: column; align-items: stretch; }
+    .hero-grid { flex-direction: column; align-items: flex-start; }
+    h1 { font-size: 1.8rem; }
+    .swatch-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="blobs" aria-hidden="true">
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+</div>
+
+<main>
+  <header>
+    <h1>RAMP{ed}="Up"; by CodecsDiver</h1>
+    <p class="subtitle"><a href="https://github.com/CodecsDiver" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-underline-offset: 3px;">github.com/CodecsDiver</a></p>
+  </header>
+
+  <!-- Hero / Base -->
+  <section class="panel hero-panel">
+    <div class="hero-grid">
+      <div class="hero-primary">
+        <div class="picker-wrap">
+          <div class="picker-glow" id="pickerGlow"></div>
+          <input type="color" id="colorPicker" value="#ff6ec7">
+        </div>
+        <div>
+          <div class="label-tag" style="margin-bottom:4px">Base Color</div>
+          <div class="oklch-readout" id="oklchReadout">L 0.00 C 0.00 H 0°</div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button type="button" id="randomBaseBtn">🎲 Random Base</button>
+        <button type="button" id="unlockAllBtn">Unlock All</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Global Controls -->
+  <section class="panel">
+    <div class="controls">
+      <div class="control-group">
+        <label>Curve</label>
+        <select id="curveSelect">
+          <option value="linear">Linear</option>
+          <option value="easeIn">Ease In</option>
+          <option value="easeOut" selected>Ease Out</option>
+          <option value="easeInOut">Ease In Out</option>
+          <option value="expo">Exponential</option>
+        </select>
+      </div>
+      <div class="control-group no-grow">
+        <label>Steps</label>
+        <input type="number" id="stepsInput" value="8" min="3" max="12">
+      </div>
+      <div class="control-group">
+        <label>Harmony</label>
+        <select id="harmonySelect">
+          <option value="monochromatic">Monochromatic</option>
+          <option value="complementary">Complementary</option>
+          <option value="analogous" selected>Analogous</option>
+          <option value="triadic">Triadic</option>
+          <option value="splitComplementary">Split-Complementary</option>
+          <option value="tetradic">Tetradic</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Chroma Boost <span class="val" id="chromaVal">1.0</span></label>
+        <input type="range" id="chromaRange" min="0" max="2" step="0.05" value="1.0">
+      </div>
+      <div class="control-group">
+        <label>Hue Shift <span class="val" id="hueVal">0°</span></label>
+        <input type="range" id="hueRange" min="-180" max="180" step="5" value="0">
+      </div>
+      <div class="control-group no-grow">
+        <label>Light</label>
+        <label class="switch">
+          <input type="checkbox" id="themeToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- Light Scale -->
+  <section class="panel">
+    <h2 class="label-tag">Tints (Light Scale)</h2>
+    <div class="swatch-grid" id="lightsRow"></div>
+  </section>
+
+  <!-- Dark Scale -->
+  <section class="panel">
+    <h2 class="label-tag">Shades (Dark Scale)</h2>
+    <div class="swatch-grid" id="darksRow"></div>
+  </section>
+
+  <!-- Accents -->
+  <section class="panel">
+    <h2 class="label-tag">Harmony Accents</h2>
+    <div class="swatch-grid" id="accentsRow"></div>
+  </section>
+
+  <!-- Palette Generator -->
+  <section class="panel">
+    <div class="palette-toolbar">
+      <h2 class="label-tag" style="flex:1;margin-bottom:0;">Palette Generator</h2>
+      <div class="control-group no-grow" style="min-width:140px;">
+        <label>Vibe</label>
+        <select id="vibeSelect">
+          <option value="any">Any</option>
+          <option value="pastel">Pastel</option>
+          <option value="vivid">Vivid</option>
+          <option value="neon">Neon</option>
+          <option value="deep">Deep</option>
+          <option value="earth">Earth</option>
+          <option value="ocean">Ocean</option>
+        </select>
+      </div>
+      <button type="button" id="generatePaletteBtn" class="primary">Generate</button>
+    </div>
+    <div class="palette-row" id="paletteResult"></div>
+    <p class="palette-hint">Click a swatch to set it as base color. Click the hex code to copy.</p>
+  </section>
+
+  <!-- Developer Mode -->
+  <section class="panel">
+    <h2 class="label-tag has-toggle">
+      <span>Developer Mode</span>
+      <label class="switch">
+        <input type="checkbox" id="devToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </h2>
+    <div class="dev-content" id="devContent">
+      <div class="dev-inner">
+        <div class="controls" style="margin-bottom:14px;">
+          <div class="control-group">
+            <label>Name Prefix</label>
+            <input type="text" id="prefixInput" value="chroma" placeholder="myPalette">
+          </div>
+        </div>
+        <div class="tabs">
+          <button type="button" class="tab-btn active" data-tab="css">CSS Vars</button>
+          <button type="button" class="tab-btn" data-tab="tailwind">Tailwind</button>
+          <button type="button" class="tab-btn" data-tab="json">JSON</button>
+          <button type="button" class="tab-btn" data-tab="scss">SCSS</button>
+        </div>
+        <pre id="exportPreview"></pre>
+        <div class="export-bottom">
+          <button type="button" id="copyExportBtn" class="primary">Copy to Clipboard</button>
+          <span id="copyStatus"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ========================================================= Color Engine ========================================================= */
+
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+}
+function rgbToHex(r,g,b) {
+  const f = v => Math.round(clamp(v,0,255)).toString(16).padStart(2,'0');
+  return `#${f(r)}${f(g)}${f(b)}`;
+}
+function srgbToLinearChannel(c) {
+  c /= 255;
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+function linearToSrgbChannel(c) {
+  const v = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1/2.4) - 0.055;
+  return v * 255;
+}
+
+function hexToOklch(hex) {
+  const [r8,g8,b8] = hexToRgb(hex);
+  const r = srgbToLinearChannel(r8), g = srgbToLinearChannel(g8), b = srgbToLinearChannel(b8);
+  const l = 0.4122214708*r + 0.5363325363*g + 0.0514459929*b;
+  const m = 0.2119034982*r + 0.6806995451*g + 0.1073969566*b;
+  const s = 0.0883024619*r + 0.2817188376*g + 0.6299787005*b;
+  const l_ = Math.cbrt(l), m_ = Math.cbrt(m), s_ = Math.cbrt(s);
+  const L = 0.2104542553*l_ + 0.7936177850*m_ - 0.0040720468*s_;
+  const a = 1.9779984951*l_ - 2.4285922050*m_ + 0.4505937099*s_;
+  const bb = 0.0259040371*l_ + 0.7827717662*m_ - 0.8086757660*s_;
+  const C = Math.sqrt(a*a + bb*bb);
+  let H = Math.atan2(bb, a) * 180 / Math.PI;
+  if (H < 0) H += 360;
+  return { L, C, H };
+}
+
+function oklchToLinearRgb(L, C, H) {
+  const hr = H * Math.PI / 180;
+  const a = C * Math.cos(hr);
+  const b = C * Math.sin(hr);
+  const l_ = L + 0.3963377774*a + 0.2158037573*b;
+  const m_ = L - 0.1055613458*a - 0.0638541728*b;
+  const s_ = L - 0.0894841775*a - 1.2914855480*b;
+  const l = l_*l_*l_, m = m_*m_*m_, s = s_*s_*s_;
+  const r = +4.0767416621*l - 3.3077115913*m + 0.2309699292*s;
+ const g = -1.2684380046*l + 2.6097574011*m - 0.3413193965*s;
+  const bch = -0.0041960863*l - 0.7034186147*m + 1.7076147010*s;
+  return [r, g, bch];
+}
+
+function oklchToHex(L, C_in, H) {
+  if (C_in <= 0) {
+    const [r,g,b] = oklchToLinearRgb(L, 0, H);
+    return rgbToHex(linearToSrgbChannel(clamp(r,0,1)), linearToSrgbChannel(clamp(g,0,1)), linearToSrgbChannel(clamp(b,0,1)));
+  }
+  let low = 0, high = C_in, best = 0;
+  const eps = 1e-4;
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2;
+    const [r, g, b] = oklchToLinearRgb(L, mid, H);
+    if (r >= -eps && r <= 1+eps && g >= -eps && g <= 1+eps && b >= -eps && b <= 1+eps) {
+      best = mid;
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+  const [r,g,b] = oklchToLinearRgb(L, best, H);
+  return rgbToHex(linearToSrgbChannel(clamp(r,0,1)), linearToSrgbChannel(clamp(g,0,1)), linearToSrgbChannel(clamp(b,0,1)));
+}
+
+function relLuminance(hex) {
+  const [r8,g8,b8] = hexToRgb(hex);
+  const lin = v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+  return 0.2126*lin(r8) + 0.7152*lin(g8) + 0.0722*lin(b8);
+}
+function contrastRatio(a, b) {
+  const L1 = relLuminance(a), L2 = relLuminance(b);
+  return (Math.max(L1,L2) + 0.05) / (Math.min(L1,L2) + 0.05);
+}
+function contrastGrade(r) {
+  if (r >= 7) return { label:'AAA', cls:'pill-pass' };
+  if (r >= 4.5) return { label:'AA',  cls:'pill-pass' };
+  if (r >= 3)   return { label:'AA-L',cls:'pill-aa' };
+  return { label:'Fail', cls:'pill-fail' };
+}
+
+const curves = {
+  linear: t => t,
+  easeIn: t => t*t,
+  easeOut: t => 1 - (1-t)*(1-t),
+  easeInOut: t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2,
+  expo: t => t === 0 ? 0 : Math.pow(2, 10 * (t - 1))
+};
+
+function computeLights(L, C, H, steps, key) {
+  const fn = curves[key]; const mx = 0.97;
+  return Array.from({ length: steps }, (_, i) => {
+    const t = steps === 1 ? 0 : i / (steps - 1);
+    const tc = fn(t);
+    const l = L + (mx - L)*tc;
+    const c = C * (1 - 0.5*tc); // slightly more aggressive chroma drop for lights
+    const h = H;
+    return { L:l, C:c, H:h, hex: oklchToHex(l, c, h), locked: false };
+  });
+}
+function computeDarks(L, C, H, steps, key) {
+  const fn = curves[key]; const mn = 0.10;
+  return Array.from({ length: steps }, (_, i) => {
+    const t = steps === 1 ? 0 : i / (steps - 1);
+    const tc = fn(t);
+    const l = L - (L - mn)*tc;
+    const c = C * (1 - 0.35*tc); // darks keep a bit more chroma
+    const h = H;
+    return { L:l, C:c, H:h, hex: oklchToHex(l, c, h), locked: false };
+  });
+}
+function computeAccents(L, C, H, mode) {
+  const wrap = h => (h % 360 + 360) % 360;
+  if (mode === 'monochromatic') {
+    return [
+      { L: Math.max(L-0.22,0.08), C: C*0.80, H },
+      { L: Math.max(L-0.10,0.08), C: C*0.95, H },
+      { L, C, H },
+      { L: Math.min(L+0.10,0.95), C: C*0.95, H },
+      { L: Math.min(L+0.22,0.95), C: C*0.80, H }
+    ].map(v => ({ ...v, hex: oklchToHex(v.L, v.C, v.H), locked: false }));
+  }
+  let hues;
+  switch (mode) {
+    case 'complementary': hues = [H, wrap(H+180)]; break;
+    case 'analogous': hues = [wrap(H-30), H, wrap(H+30)]; break;
+    case 'triadic': hues = [H, wrap(H+120), wrap(H+240)]; break;
+    case 'splitComplementary': hues = [H, wrap(H+150), wrap(H+210)]; break;
+    case 'tetradic': hues = [H, wrap(H+90), wrap(H+180), wrap(H+270)]; break;
+    default: hues = [H];
+  }
+  return hues.map(h => ({ L, C, H: h, hex: oklchToHex(L, C, h), locked: false }));
+}
+
+/* ========================================================= App State ========================================================= */
+
+const App = {
+  base: { hex:'#ff6ec7', ...hexToOklch('#ff6ec7') },
+  steps: 8,
+  curve: 'easeOut',
+  harmony: 'analogous',
+  chromaBoost: 1.0,
+  hueShift: 0,
+  lights: [],
+  darks: [],
+  accents: [],
+  tab: 'css',
+  exportRaw: ''
+};
+
+function recomputeAll() {
+  const b = App.base;
+  const C = b.C * App.chromaBoost;
+  const H = (b.H + App.hueShift) % 360;
+  const lockedL = App.lights.map(c => c.locked);
+  const lockedD = App.darks.map(c => c.locked);
+  const lockedA = App.accents.map(c => c.locked);
+
+  App.lights = computeLights(b.L, C, H, App.steps, App.curve);
+  App.darks  = computeDarks(b.L, C, H, App.steps, App.curve);
+  App.accents= computeAccents(b.L, C, H, App.harmony);
+
+  // restore locks where lengths match
+  App.lights.forEach((c,i) => { if (lockedL[i]) c.locked = true; });
+  App.darks .forEach((c,i) => { if (lockedD[i]) c.locked = true; });
+  App.accents.forEach((c,i) => { if (lockedA[i]) c.locked = true; });
+
+  renderAll();
+}
+
+function setPrimary(hex) {
+  App.base = { hex, ...hexToOklch(hex) };
+  document.getElementById('colorPicker').value = hex;
+  recomputeAll();
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+  showToast(`Copied ${text}`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ========================================================= DOM Helper ========================================================= */
+
+function h(tag, props = {}, ...children) {
+  const el = document.createElement(tag);
+  Object.entries(props).forEach(([k, v]) => {
+    if (v == null) return;
+    if (k === 'textContent') el.textContent = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'className') el.className = v;
+    else el.setAttribute(k, v);
+  });
+  children.forEach(c => {
+    if (c == null) return;
+    if (c instanceof Node) el.appendChild(c);
+    else el.appendChild(document.createTextNode(String(c)));
+  });
+  return el;
+}
+
+/* ========================================================= Rendering ========================================================= */
+
+function renderSwatches(id, arr) {
+  const box = document.getElementById(id);
+  box.innerHTML = '';
+  arr.forEach((c, i) => {
+    const w = contrastRatio(c.hex, '#ffffff');
+    const b = contrastRatio(c.hex, '#000000');
+    const wg = contrastGrade(w);
+    const bg = contrastGrade(b);
+
+    const tip = h('div', { className: 'tip' },
+ `L ${c.L.toFixed(2)} • C ${c.C.toFixed(2)} • H ${Math.round(c.H)}°`
+    );
+
+    const lock = h('button', {
+      className: 'lock-btn' + (c.locked ? ' locked' : ''),
+      title: c.locked ? 'Unlock' : 'Lock',
+      onClick: (e) => { e.stopPropagation(); c.locked = !c.locked; renderAll(); }
+    }, c.locked ? '🔒' : '🔓');
+
+    const idx = h('span', { className: 'swatch-idx' }, String(i+1));
+
+    const chip = h('div', {
+      className: 'swatch-color',
+      style: { backgroundColor: c.hex },
+      title: 'Click to set base • Hex click copies',
+      onClick: () => setPrimary(c.hex)
+    }, idx, lock);
+
+    const hexLabel = h('span', { className: 'swatch-hex', onClick: (e) => { e.stopPropagation(); copyText(c.hex); } }, c.hex);
+
+    const card = h('div', { className: 'swatch-card' },
+ chip,
+      tip,
+      hexLabel,
+      h('div', { className: 'contrast-row' },
+        h('span', { className: `pill ${wg.cls}`, title: `White ${w.toFixed(2)}:1 (${wg.label})` }, `W ${w.toFixed(1)}`),
+        h('span', { className: `pill ${bg.cls}`, title: `Black ${b.toFixed(2)}:1 (${bg.label})` }, `B ${b.toFixed(1)}`)
+      )
+    );
+    box.appendChild(card);
+  });
+}
+
+function renderReadout() {
+  const b = App.base;
+  document.getElementById('oklchReadout').textContent =
+    `L ${b.L.toFixed(2)}  C ${b.C.toFixed(2)}  H ${Math.round(b.H)}°`;
+}
+
+function setAmbience(hex) {
+  const [r,g,b] = hexToRgb(hex);
+  const rgba = `rgba(${r},${g},${b},0.14)`;
+  document.documentElement.style.setProperty('--glow', rgba);
+  document.getElementById('pickerGlow').style.background = rgba;
+}
+
+function renderAll() {
+  renderSwatches('lightsRow', App.lights);
+  renderSwatches('darksRow',  App.darks);
+  renderSwatches('accentsRow',App.accents);
+  renderReadout();
+  renderExport();
+  setAmbience(App.base.hex);
+}
+
+/* Palette Generator — generates cohesive5-color schemes from scratch */
+function randomRange(min, max) { return min + Math.random() * (max - min); }
+
+function vibeColor(vibe) {
+  let L, C, H;
+  switch (vibe) {
+    case 'pastel':
+      L = randomRange(0.78, 0.95); C = randomRange(0.04, 0.14); H = Math.random() * 360; break;
+    case 'vivid':
+      L = randomRange(0.52, 0.68); C = randomRange(0.22, 0.36); H = Math.random() * 360; break;
+    case 'neon':
+      L = randomRange(0.62, 0.80); C = randomRange(0.28, 0.40); H = Math.random() * 360; break;
+    case 'deep':
+      L = randomRange(0.15, 0.35); C = randomRange(0.12, 0.26); H = Math.random() * 360; break;
+    case 'earth':
+      H = randomRange(30, 100); L = randomRange(0.35, 0.60); C = randomRange(0.08, 0.20); break;
+    case 'ocean':
+      H = randomRange(170, 260); L = randomRange(0.30, 0.65); C = randomRange(0.10, 0.24); break;
+    default: /* any */
+      L = randomRange(0.25, 0.85); C = randomRange(0.10, 0.30); H = Math.random() * 360;
+  }
+  return { L, C, H: H % 360 };
+}
+
+function generatePalette() {
+  const vibe = document.getElementById('vibeSelect').value;
+  const { L, C, H } = vibeColor(vibe);
+  const baseHex = oklchToHex(L, C, H);
+  const lightHex = oklchToHex(Math.min(L+0.28, 0.96), C*0.65, H);
+  const darkHex  = oklchToHex(Math.max(L-0.32, 0.08), C*0.55, H);
+
+  const wrap = h => (h % 360 + 360) % 360;
+  const hues = [wrap(H+30), wrap(H-30)];
+  const accent1 = oklchToHex(L, C*0.9, hues[0]);
+  const accent2 = oklchToHex(L, C*0.9, hues[1]);
+
+  const items = [
+    { hex: baseHex, label: 'Base' },
+    { hex: lightHex, label: 'Tint' },
+    { hex: darkHex, label: 'Shade' },
+    { hex: accent1, label: 'Accent 1' },
+    { hex: accent2, label: 'Accent 2' }
+  ];
+
+  const box = document.getElementById('paletteResult');
+  box.innerHTML = '';
+  items.forEach(item => {
+    const el = h('div', { className: 'palette-swatch' },
+      h('div', {
+        className: 'palette-color',
+        style: { backgroundColor: item.hex },
+        title: 'Set as base',
+        onClick: () => setPrimary(item.hex)
+      }),
+      h('span', { className: 'palette-label' }, item.label),
+      h('span', { className: 'palette-hex', onClick: (e) => { e.stopPropagation(); copyText(item.hex); } }, item.hex)
+    );
+    box.appendChild(el);
+  });
+}
+
+/* Developer Mode / Export */
+function buildEntries() {
+  const out = [{ key: 'base', hex: App.base.hex }];
+  App.lights.forEach ((c,i) => out.push({ key: `light-${i+1}`, hex: c.hex }));
+  App.darks.forEach  ((c,i) => out.push({ key: `dark-${i+1}`,   hex: c.hex }));
+  App.accents.forEach((c,i) => out.push({ key: `accent-${i+1}`, hex: c.hex }));
+  return out;
+}
+
+function renderExport() {
+  const prefix = (document.getElementById('prefixInput').value || 'chroma').trim();
+  const entries = buildEntries();
+  let raw = '', html = '';
+
+  if (App.tab === 'css') {
+    raw = `:root {\n${entries.map(e => `  --${prefix}-${e.key}: ${e.hex};`).join('\n')}\n}`;
+    html = `<span class="token-sel">:root</span> <span class="token-punct">{</span>\n` +
+      entries.map(e => `  <span class="token-punct">--</span><span class="token-key">${prefix}-${e.key}</span><span class="token-punct">:</span> <span class="token-val">${e.hex}</span><span class="token-punct">;</span>`).join('\n') +
+      `\n<span class="token-punct">}</span>`;
+  } else if (App.tab === 'scss') {
+    raw = entries.map(e => `$${prefix}-${e.key}: ${e.hex};`).join('\n');
+    html = entries.map(e => `<span class="token-punct">$</span><span class="token-key">${prefix}-${e.key}</span><span class="token-punct">:</span> <span class="token-val">${e.hex}</span><span class="token-punct">;</span>`).join('\n');
+  } else if (App.tab === 'json') {
+    const obj = {};
+    entries.forEach(e => obj[`${prefix}-${e.key}`] = e.hex);
+    raw = JSON.stringify(obj, null, 2);
+    html = raw
+      .replace(/"([^"]+)"(?=:)/g, '<span class="token-key">"$1"</span>')
+      .replace(/: "([^"]+)"/g, ': <span class="token-str">"$1"</span>');
+  } else if (App.tab === 'tailwind') {
+    const lines = entries.map(e => `        '${e.key}': '${e.hex}',`).join('\n');
+    raw = `module.exports = {\n  theme: {\n    extend: {\n      colors: {\n        ${prefix}: {\n${lines}\n        }\n      }\n    }\n  }\n};`;
+    html = `<span class="token-sel">module.exports</span> <span class="token-punct">=</span> {\n` +
+      `  <span class="token-key">theme</span><span class="token-punct">:</span> {\n` +
+      `    <span class="token-key">extend</span><span class="token-punct">:</span> {\n` +
+      `      <span class="token-key">colors</span><span class="token-punct">:</span> {\n` +
+      `        <span class="token-key">${prefix}</span><span class="token-punct">:</span> {\n` +
+      entries.map(e => `          <span class="token-str">'${e.key}'</span><span class="token-punct">:</span> <span class="token-str">'${e.hex}'</span>,`).join('\n') +
+      `\n        }\n      }\n    }\n  }\n};`;
+  }
+
+  App.exportRaw = raw;
+  document.getElementById('exportPreview').innerHTML = html;
+}
+
+/* Clipboard & Toast */
+document.getElementById('copyExportBtn').addEventListener('click', () => {
+  copyText(App.exportRaw);
+  const status = document.getElementById('copyStatus');
+  status.textContent = 'Copied!';
+  setTimeout(() => status.textContent = '', 1500);
+});
+
+/* ========================================================= Wiring ========================================================= */
+
+document.getElementById('colorPicker').addEventListener('input', e => setPrimary(e.target.value));
+
+document.getElementById('curveSelect').addEventListener('change', e => { App.curve = e.target.value; recomputeAll(); });
+
+document.getElementById('harmonySelect').addEventListener('change', e => { App.harmony = e.target.value; recomputeAll(); });
+
+document.getElementById('stepsInput').addEventListener('input', e => {
+  let v = parseInt(e.target.value, 10) || 8;
+  v = Math.min(12, Math.max(3, v));
+  if (App.steps !== v) { App.steps = v; e.target.value = v; recomputeAll(); }
+});
+
+const chromaRange = document.getElementById('chromaRange');
+const chromaVal = document.getElementById('chromaVal');
+chromaRange.addEventListener('input', e => {
+  App.chromaBoost = parseFloat(e.target.value);
+  chromaVal.textContent = App.chromaBoost.toFixed(2);
+  recomputeAll();
+});
+
+const hueRange = document.getElementById('hueRange');
+const hueVal = document.getElementById('hueVal');
+hueRange.addEventListener('input', e => {
+  App.hueShift = parseInt(e.target.value, 10);
+  hueVal.textContent = App.hueShift + '°';
+  recomputeAll();
+});
+
+document.getElementById('unlockAllBtn').addEventListener('click', () => {
+ [...App.lights, ...App.darks, ...App.accents].forEach(c => c.locked = false);
+  renderAll();
+});
+
+document.getElementById('randomBaseBtn').addEventListener('click', () => {
+  const H = Math.floor(Math.random() * 360);
+  const L = 0.3 + Math.random() * 0.5;
+  const C = 0.08 + Math.random() * 0.22;
+  setPrimary(oklchToHex(L, C, H));
+});
+
+document.getElementById('generatePaletteBtn').addEventListener('click', generatePalette);
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    App.tab = btn.dataset.tab;
+    renderExport();
+  });
+});
+
+document.getElementById('prefixInput').addEventListener('input', renderExport);
+
+/* Theme toggle */
+document.getElementById('themeToggle').addEventListener('change', (e) => {
+  document.body.classList.toggle('light', e.target.checked);
+});
+
+/* Developer mode toggle */
+const devToggle = document.getElementById('devToggle');
+const devContent = document.getElementById('devContent');
+devToggle.addEventListener('change', (e) => {
+  devContent.classList.toggle('collapsed', !e.target.checked);
+});
+if (!devToggle.checked) devContent.classList.add('collapsed');
+
+/* Boot */
+recomputeAll();
+</script>
+
+</body>
+</html>
