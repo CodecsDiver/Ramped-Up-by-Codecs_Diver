@@ -1,7 +1,8 @@
-# Ramped-Up-by-Codecs_Diver
+by-Codecs_Diver
 # RAMP{ed}="Up"
 
-## Hey, welcome to RAMP{ed}="Up" ![Alt text](/home/codecs-diver/Downloads/RAMPed-UP-Logo.pngpng)
+## Hey, welcome to RAMP{ed}="Up" 
+![RAMPed UP Logo](RAMPed-UP-Logo.png)
 
 This started as a straightforward OKLCH color ramp generator — pick a color, get clean tints, shades, and harmony accents out of it. Since then it's gone through a few rounds of changes: a rename, a visual refresh (glass-style backgrounds, 3D-ish swatch tiles), and an attempt at a bigger interactive feature — a "Color Test" mode where you could preview a palette on a room mockup or a fake code editor.
 
