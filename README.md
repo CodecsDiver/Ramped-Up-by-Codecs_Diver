@@ -9,9 +9,9 @@ That Color Test feature didn't make it into this build. It ran into repeated dra
 
 What you're looking at here is the stable core: the ramp generator itself, fully working, without that experimental feature bolted on.
 
-![RAMPed UP Logo](assets/NeutralTone.png)
 
-# # Here's a walkthrough of everything it can do right now, piece by piece.
+
+## Here's a walkthrough of everything it can do right now, piece by piece.
 
 # Functionality
 Base Color Picker
@@ -74,7 +74,7 @@ Shows each swatch's readability against white and black text, graded by WCAG sta
 
 Generates a full 5-color palette from a mood instead of a specific color. How to use it: Pick a vibe (pastel, vivid, neon, deep, earth, or ocean) from the Palette Generator section, then click any resulting color to set it as your new base color.
 
-# # Developer Mode
+## Developer Mode
 
 A collapsible panel showing the raw values behind your current palette. How to use it: Click to expand the Developer Mode section near the bottom of the app to view the underlying data.
 
@@ -82,4 +82,4 @@ A collapsible panel showing the raw values behind your current palette. How to u
 
 This is an early build (prototype 1). Expect things to shift around as it grows.
 
-# # # Made by CodecsDiver
+### Made by CodecsDiver
