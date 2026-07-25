@@ -9,9 +9,9 @@ That Color Test feature didn't make it into this build. It ran into repeated dra
 
 What you're looking at here is the stable core: the ramp generator itself, fully working, without that experimental feature bolted on.
 
-![RAMPed UP Logo](assets/Coffee.png)
+![RAMPed UP Logo](assets/NeutralTone.png)
 
-# #Here's a walkthrough of everything it can do right now, piece by piece.
+# # Here's a walkthrough of everything it can do right now, piece by piece.
 
 # Functionality
 Base Color Picker
