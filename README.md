@@ -1,5 +1,5 @@
 >RAMPed{Up}
-# #Hey, welcome to >RAMPed{Up}
+### Hey, welcome to >RAMPed{Up}
 
 ![RAMPed UP Logo](assets/AwaittaDark.png)
 
